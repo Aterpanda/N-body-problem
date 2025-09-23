@@ -13,9 +13,9 @@ sim.add(m=3.002e-6, a=1.0)     # Planet (mass = 1/1000 solar mass, orbit at 1 AU
 planet = sim.particles[1]
 
 #moons with orbits
-sim.add(m=8.7e-7, primary=planet, a=0.00020, e=0.010, f=1.0)
-sim.add(m=5e-10, primary=planet, a=0.00035, e=0.020, f=2.0)
-sim.add(m=3.694e-8, primary=planet, a=0.00020, e=0.035, f=0.0)
+sim.add(m=3.695e-8, primary=planet, a=0.00030, e=0.050, f=2.0)
+sim.add(m=5.4e-10,  primary=planet, a=0.00035, e=0.0001, f=2.0)
+sim.add(m=3.695e-8, primary=planet, a=0.00020, e=0.035, f=0.0) # real moon stat
 
 sim.move_to_com()
 
