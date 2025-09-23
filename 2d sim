@@ -1,0 +1,89 @@
+import rebound
+import matplotlib
+matplotlib.use("Qt5Agg") # or Qt5Agg TkAgg
+import matplotlib.pyplot as plt 
+from matplotlib.animation import FuncAnimation
+
+sim = rebound.Simulation()
+sim.integrator = "whfast"
+sim.dt = 0.001 #smaller timestep for moons
+
+sim.add(m=1.0)             # Star (mass = 1 solar mass)
+sim.add(m=3.002e-6, a=1.0)     # Planet (mass = 1/1000 solar mass, orbit at 1 AU)
+planet = sim.particles[1]
+
+#moons with orbits
+sim.add(m=8.7e-7, primary=planet, a=0.00020, e=0.010, f=1.0)
+sim.add(m=5e-10, primary=planet, a=0.00035, e=0.020, f=2.0)
+sim.add(m=3.694e-8, primary=planet, a=0.00020, e=0.035, f=0.0)
+
+sim.move_to_com()
+
+rebound.OrbitPlot(sim)
+
+for p in sim.particles:
+    print(f"x={p.x:.3f}, y={p.y:.3f}, z={p.z:.3f}, vx={p.vx:.3e}, vy={p.vy:.3e}, vz={p.vz:.3e}")
+    
+fig, ax = plt.subplots()
+ax.set_xlim(-1.5, 1.5)
+ax.set_ylim(-1.5, 1.5)
+ax.set_aspect("equal")
+
+#Draw Star(orange) and planet (blue)
+star, = ax.plot([], [], "o", color="orange", markersize=12, label="Star")
+planet_dot, = ax.plot([], [], "o", color="blue", markersize=6, label="Planet")
+
+#The moons
+moon_dots = [
+    ax.plot([], [], "o", color="red", markersize=4, label="Moon 1")[0],
+    ax.plot([], [], "o", color="purple", markersize=4, label="Moon 2")[0],
+    ax.plot([], [], "o", color="gray", markersize=4, label="Moon 3")[0],
+
+]
+planet_trail, = ax.plot([], [],"-", color="black", linewidth=1, alpha=0.6)
+moon_trails = [
+    ax.plot([], [], ".", color="red", markersize=1, alpha=0.5)[0],
+    ax.plot([], [], ".", color="purple", markersize=1, alpha=0.5)[0],
+    ax.plot([], [], ".", color="gray", markersize=1, alpha=0.5)[0],
+]
+ax.legend()
+
+#Store Orbit history
+px_hist, py_hist = [], []
+moon_histories = [[] for _ in range(3)]
+
+total_time = 1.0
+frames = 1000
+dt = total_time / frames
+
+def update(frame):
+    global px_hist, py_hist, moon_histories
+    sim.integrate(frame * sim.dt)
+    
+    star_p = sim.particles[0]
+    planet_p = sim.particles[1]
+    moons_particles = [sim.particles[2], sim.particles[3], sim.particles[4]]
+    
+    star.set_data([star_p.x], [star_p.y])
+    planet_dot.set_data([planet_p.x], [planet_p.y])
+    
+    px_hist.append(planet_p.x)
+    py_hist.append(planet_p.y)
+    planet_trail.set_data(px_hist, py_hist)
+    
+    for i, m in enumerate(moons_particles):
+        moon_dots[i].set_data([m.x], [m.y])
+        moon_histories[i].append((m.x, m.y))
+        xs, ys = zip(*moon_histories[i])
+        moon_trails[i].set_data(xs, ys)
+        
+    zoom = 0.001
+    ax.set_xlim(planet_p.x - zoom, planet_p.x + zoom)
+    ax.set_ylim(planet_p.y - zoom, planet_p.y + zoom)
+    
+    return [star, planet_dot, planet_trail] + moon_dots + moon_trails
+    
+#run animation
+ani = FuncAnimation(fig, update, frames=2000, interval=30, blit=True)
+ani.save("orbit.mp4", writer="ffmpeg", fps=30)
+#plt.show(block=True)
