@@ -13,8 +13,8 @@ sim.add(m=3.002e-6, a=1.0)     # Planet (mass = 1/1000 solar mass, orbit at 1 AU
 planet = sim.particles[1]
 
 #moons with orbits
-sim.add(m=3.695e-8, primary=planet, a=0.00030, e=0.050, f=2.0)
-sim.add(m=5.4e-10,  primary=planet, a=0.00035, e=0.0001, f=2.0)
+sim.add(m=1.8475e-9, primary=planet, a=0.00080, e=0.060, f=3.5)#röd
+sim.add(m=7.30e-8,  primary=planet, a=0.00060, e=0.0035, f=1.5)#Lila
 sim.add(m=3.695e-8, primary=planet, a=0.00020, e=0.035, f=0.0) # real moon stat
 
 sim.move_to_com()
@@ -77,7 +77,7 @@ def update(frame):
         xs, ys = zip(*moon_histories[i])
         moon_trails[i].set_data(xs, ys)
         
-    zoom = 0.001
+    zoom = 0.01
     ax.set_xlim(planet_p.x - zoom, planet_p.x + zoom)
     ax.set_ylim(planet_p.y - zoom, planet_p.y + zoom)
     
